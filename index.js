@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import cors from 'cors'; // Importing CORS
 import { connectDB } from './src/configs/db.config.js';
 import AuthRoutes from './src/routes/user.js';
+import ProductRoutes from './src/routes/product.js'
 
 dotenv.config();
 
@@ -32,6 +33,7 @@ app.get('/', (req, res) => {
 });
 
 app.use('/api/auth', AuthRoutes);
+app.use('/api/product', ProductRoutes);
 
 // Error handling for undefined routes
 app.use((req, res) => {
