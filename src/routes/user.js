@@ -3,6 +3,8 @@ import { forgetPassword, login, resetPassword, SignUp } from '../controllers/aut
 import { deleteUser, getAllUsers, getUserByID, updateUser } from '../controllers/user.js';
 import { isLoggedIn } from '../middlewares/auth.js';
 import { upload } from '../helpers/multer.js';
+import passport from 'passport';
+
 
 const router = express.Router()
 
@@ -14,5 +16,16 @@ router.get('/users', getAllUsers)
 router.get('/user/:userId', getUserByID)
 router.put('/user/update', isLoggedIn, upload.single("image"), updateUser)
 router.delete('/user/delete', isLoggedIn, deleteUser);
+
+// Google routes
+router.get('/google', passport.authenticate('google', {
+  scope: ['profile', 'email']
+}));
+
+router.get('/google/callback', passport.authenticate('google', { failureRedirect: '/' }), (req, res) => {
+  // Successful authentication, redirect home.
+  res.redirect('/home');
+});
+  
 
 export default router

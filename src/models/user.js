@@ -4,6 +4,11 @@ const { Schema } = mongoose;
 
 const UserSchema = new Schema(
   {
+    googleId: {
+      type: String,
+      unique: true,
+      sparse: true
+    },
     firstName: {
       type: String,
       required: true,
@@ -37,7 +42,9 @@ const UserSchema = new Schema(
     },
     password: {
       type: String,
-      required: true,
+      required: function() {
+        return !this.googleId;
+      }
     },
     resetPasswordToken: String,
     resetPasswordExpire: Date,

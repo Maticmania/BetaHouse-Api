@@ -1,9 +1,11 @@
 import express from 'express';
 import dotenv from 'dotenv';
-import cors from 'cors'; // Importing CORS
+import cors from 'cors'; 
 import { connectDB } from './src/configs/db.config.js';
+import passport from './src/configs/passport.js'; // Import passport configuration
 import AuthRoutes from './src/routes/user.js';
-import ProductRoutes from './src/routes/product.js'
+import SocialRoutes from './src/routes/auth.js';
+import ProductRoutes from './src/routes/product.js';
 
 dotenv.config();
 
@@ -17,12 +19,8 @@ app.use(express.json());
 // Enabling CORS for all routes
 app.use(cors());
 
-// const corsOptions = {
-//   origin: 'http://your-frontend-domain.com',
-//   optionsSuccessStatus: 200 // For legacy browser support
-// };
-
-// app.use(cors(corsOptions));
+// Initialize Passport
+app.use(passport.initialize());
 
 // Connect to the database
 connectDB(dbUrl);
@@ -33,6 +31,7 @@ app.get('/', (req, res) => {
 });
 
 app.use('/api/auth', AuthRoutes);
+app.use('/auth', SocialRoutes);
 app.use('/api/product', ProductRoutes);
 
 // Error handling for undefined routes
