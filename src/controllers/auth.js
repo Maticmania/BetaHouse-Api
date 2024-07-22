@@ -131,7 +131,7 @@ export const forgetPassword = async (req, res) => {
         await user.save();
   
         // Create the reset URL
-        const resetUrl = `http://localhost:5174/reset-password/${resetToken}`;
+        const resetUrl = `https://betahouse-matic.vercel.app/reset-password/${resetToken}`;
   
         // Configure the email
         const transporter = nodemailer.createTransport({
