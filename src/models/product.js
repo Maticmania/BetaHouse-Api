@@ -37,7 +37,7 @@ const ProductSchema = new Schema(
     ],
     category: {
       type: String,
-      enum: ["sale", "rent"],
+      enum: ["Sale", "Rent"],
       required: true,
     },
     price: {
@@ -52,6 +52,10 @@ const ProductSchema = new Schema(
     availability: {
       type: Boolean,
       default: true,
+    },
+    propertyType: {
+      type: String,
+      required: true,
     },
   },
   { timestamps: true }

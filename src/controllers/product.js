@@ -16,7 +16,8 @@ export const createProduct = async (req, res) => {
       state,
       category,
       price,
-    } = req.body; // Removed propertyRef from here
+      propertyType
+    } = req.body;
     const imageFiles = req.files;
 
     if (!title) {
@@ -34,7 +35,8 @@ export const createProduct = async (req, res) => {
       !city ||
       !state ||
       !category ||
-      !price
+      !price ||
+      !propertyType
     ) {
       return res
         .status(400)
@@ -43,15 +45,16 @@ export const createProduct = async (req, res) => {
 
     if (isNaN(bedrooms) || isNaN(bathrooms) || isNaN(toilets) || isNaN(price)) {
       return res.status(400).json({
-        error: "Bedrooms, bathrooms, toilets, and price must be numbers",
+        success: false,
+        message: "Bedrooms, bathrooms, toilets, and price must be numbers",
       });
     }
 
     // Validate category
-    if (!["sale", "rent"].includes(category)) {
+    if (!["Sale", "Rent"].includes(category)) {
       return res
         .status(400)
-        .json({ error: 'Invalid category. Must be "sale" or "rent"' });
+        .json({ success: false, message: 'Invalid category. Must be "sale" or "rent"' });
     }
 
     // Handle image upload
@@ -64,7 +67,7 @@ export const createProduct = async (req, res) => {
             const imageResult = await cloudinary.uploader.upload(file.path);
             return {
               url: imageResult.secure_url,
-              imagePublicId: imageResult.public_id,
+              publicId: imageResult.public_id,
             };
           } catch (err) {
             console.error("Error uploading image to Cloudinary:", err);
@@ -88,11 +91,12 @@ export const createProduct = async (req, res) => {
       bathrooms,
       toilets,
       address: { street, city, state },
-      images: uploadedImages, // Set the uploaded images
+      images: uploadedImages,
       category,
       price,
       propertyRef,
-      availability: true, // default availability is true
+      propertyType,
+      availability: true, // Default availability is true
     });
 
     // Save the product to the database
@@ -104,8 +108,12 @@ export const createProduct = async (req, res) => {
     });
   } catch (error) {
     console.log("Error creating product", error);
-    res.status(500).json({ success: false, message: "Error creating property", error });  }
+    res
+      .status(500)
+      .json({ success: false, message: "Error creating property", error });
+  }
 };
+
 
 export const getAllProducts = async (req, res) => {
   try {
@@ -150,7 +158,14 @@ export const getAllProducts = async (req, res) => {
     });
   } catch (error) {
     console.log("Error getting all products", error);
-    res.status(500).json({ success: false, message: "Error retriving properties information", error });  }
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "Error retriving properties information",
+        error,
+      });
+  }
 };
 
 export const getProductByIdOrRef = async (req, res) => {
@@ -199,7 +214,14 @@ export const getProductByIdOrRef = async (req, res) => {
     res.status(200).json({ success: true, product });
   } catch (error) {
     console.log("Error retriving product", error);
-    res.status(500).json({ success: false, message: "Error retriving property information", error });  }
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "Error retriving property information",
+        error,
+      });
+  }
 };
 
 export const updateProduct = async (req, res) => {
@@ -285,13 +307,11 @@ export const updateProduct = async (req, res) => {
     });
   } catch (error) {
     console.log("Error updating", error);
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Error updating property information",
-        error,
-      });
+    res.status(500).json({
+      success: false,
+      message: "Error updating property information",
+      error,
+    });
   }
 };
 
@@ -328,3 +348,40 @@ export const deleteProduct = async (req, res) => {
       .json({ success: false, message: "Error deleting property", error });
   }
 };
+
+export const search = async (req, res) => {
+  const { location, propertyType, bedrooms } = req.query;
+
+  try {
+    let query = {};
+
+    if (location) {
+      query.$or = [
+        { "address.city": new RegExp(location, "i") },
+        { "address.state": new RegExp(location, "i") }
+      ];
+    }
+
+    if (propertyType) {
+      query.propertyType = new RegExp(propertyType, "i");
+    }
+
+    if (bedrooms) {
+      query.bedrooms = { $gte: Number(bedrooms) };
+    }
+
+    // Perform the search query, limited to 10 results
+    const products = await Product.find(query) 
+    const productCount = products.length;
+
+    return res.json({
+      success: productCount > 0,
+      productCount,
+      products,
+      message: productCount > 0 ? 'Matching products found.' : 'No matching products found.'
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+

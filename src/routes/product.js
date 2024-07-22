@@ -1,14 +1,33 @@
 import express from 'express';
-import { createProduct, deleteProduct, getAllProducts, getProductByIdOrRef, updateProduct } from '../controllers/product.js';
+import {
+  createProduct,
+  deleteProduct,
+  getAllProducts,
+  getProductByIdOrRef,
+  search,
+  updateProduct
+} from '../controllers/product.js';
 import { upload } from '../helpers/multer.js';
 
 const router = express.Router();
 
-router.post('/create',upload.array('images', 10), createProduct);
-router.get('/', getAllProducts);
-router.get('/:id?', getProductByIdOrRef); // Combining both id and propertyRef into one route
-router.get('/propertyref/:propertyRef?', getProductByIdOrRef); // Using a different route to handle propertyRef
+// Create a new product with image upload
+router.post('/create', upload.array('images', 10), createProduct);
+
+// Get all products with optional pagination and sorting
+router.get('/all', getAllProducts);
+
+// Get a product by ID or property reference
+router.get('/id/:id?', getProductByIdOrRef);
+router.get('/propertyref/:propertyRef?', getProductByIdOrRef);
+
+// Search products based on query parameters
+router.get('/search', search);
+
+// Update a product by ID with optional image upload
 router.put('/update/:id', upload.array('images', 10), updateProduct);
-router.delete('/delete/:id', deleteProduct); // Route for deleting product
+
+// Delete a product by ID
+router.delete('/delete/:id', deleteProduct);
 
 export default router;
