@@ -9,7 +9,7 @@ router.get('/google', passport.authenticate('google', { scope: ['profile', 'emai
 router.get('/google/callback', passport.authenticate('google', { session: false }), (req, res) => {
   const { token, user } = req.user;
   // Send user information as a query parameter
-  res.redirect(`https://localhost:5173/oauth-callback?token=${token}&user=${encodeURIComponent(JSON.stringify(user))}`);
+  res.redirect(`https://betahouse-matic.vercel.app/oauth-callback?token=${token}&user=${encodeURIComponent(JSON.stringify(user))}`);
 });
 
 router.get('/me', isLoggedIn, (req, res) => {
